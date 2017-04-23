@@ -17,15 +17,31 @@ namespace WizTest.Models
         }
     }
 
-    public class WizardStepModel
+    public abstract class WizardStepModel<T> where T: AppViewModel
     {
-        public string View { get; }
-
+        public string View { get; set; }
+        public Type ModelType
+        {
+            get
+            {
+                return typeof(T);
+            }
+        }
     }
 
     public abstract class WizardBase {
         const string WIZ_PREFIX = "Wizard_";
 
+        public WizardBase(params WizardStepModel[] steps)
+        {
+            if (!steps.Any())
+            {
+                throw new Exception("No steps defined");
+            }
+            Steps = new List<WizardStepModel>();
+            Steps.AddRange(steps);
+
+        }
         public static T GetWizardData<T>() where T : WizardBase
         {
             return HttpContext.Current.Session[WIZ_PREFIX + typeof(T).Name] as T;
@@ -40,7 +56,7 @@ namespace WizTest.Models
 
         public int Index { set; get; }
 
-        public List<WizardStepModel> Steps { get; }
+        public List<WizardStepModel> Steps { get; protected set; }
 
 
     }

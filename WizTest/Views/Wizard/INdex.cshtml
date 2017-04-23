@@ -2,23 +2,11 @@
 @{
     ViewBag.Title = "WizardContainer";
 
-    HtmlHelper.UnobtrusiveJavaScriptEnabled = true;
-    HtmlHelper.ClientValidationEnabled = true;
-    string formId = "step1";
+
 }
 
 <h2>WizardIndex</h2>
 
 <div id="wiz-container">
-    @using (Ajax.BeginForm("Wizard", "Step", null, new AjaxOptions()
-    {
-        HttpMethod = "POST",
-        UpdateTargetId = "form-profile-container",
-        LoadingElementId = "dvloading",
-        InsertionMode = InsertionMode.Replace,
-        OnComplete = string.Format("ajaxComplete('{0}')", formId)
 
-    }, new { id = formId, @class = "signup-form" }))
-    {
-    }
 </div>
