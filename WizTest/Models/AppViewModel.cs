@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-
+using System.Web.Mvc;
+using WizTest.Controllers;
 
 namespace WizTest.Models
 {
@@ -16,9 +17,10 @@ namespace WizTest.Models
         }
     }
 
-    public abstract class WizardStepModel
+    public class WizardStepModel
     {
         public string View { get; }
+
     }
 
     public abstract class WizardBase {
@@ -39,6 +41,7 @@ namespace WizTest.Models
         public int Index { set; get; }
 
         public List<WizardStepModel> Steps { get; }
+
 
     }
 
