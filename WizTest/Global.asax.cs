@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using WizTest.Models;
 using WizTest.Mvc;
 
 namespace WizTest
@@ -19,6 +20,12 @@ namespace WizTest
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             ControllerBuilder.Current.SetControllerFactory(new CustomControllerFactory());
+
+            WizardDefinition defMyWizard = new WizardDefinition();
+            defMyWizard.Add<Step1>("~/Views/Wizard/MyWizard/Step1.cshtml");
+            defMyWizard.Add<Step2>("~/Views/Wizard/MyWizard/Step2.cshtml");
+
+            WizardDefinition.Register<MyWizard>(defMyWizard);
         }
     }
 }

@@ -1,12 +1,7 @@
-﻿
-@{
-    ViewBag.Title = "WizardContainer";
-
-
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h2>WizardIndex</h2>
 
-<div id="wiz-container">
-
-</div>
+@Html.Partial("WizardContainer", WizardBase.GetWizardData<MyWizard>())

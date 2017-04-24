@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using WizTest.Controllers;
+using WizTest.Models;
 
 namespace WizTest.Mvc
 {
@@ -14,26 +15,37 @@ namespace WizTest.Mvc
         {
             if(controllerName.EndsWith("wizard", StringComparison.InvariantCultureIgnoreCase))
             {
-                string wizTypeStr = requestContext.HttpContext.Request["wiz"];
-                string modelTypeStr = requestContext.HttpContext.Request["step"];
-
-                if (!string.IsNullOrWhiteSpace(wizTypeStr))
+                string wizTypeStr = requestContext.HttpContext.Request["wiztype"];
+                string wizStep = requestContext.HttpContext.Request["wizstep"];
+                int currentStep = -1;
+                ;
+                if (!string.IsNullOrWhiteSpace(wizTypeStr) && int.TryParse(wizStep, out currentStep) & currentStep > -1)
                 {
 
-                    Type modelType = Type.GetType(wizTypeStr);
+                    Type wizType = Type.GetType(wizTypeStr);
 
-                    if(modelType != null)
+                    if(wizType != null)
                     {
-                        Type genericType = typeof(WizardController<>);
-                        Type[] typeArgs = { modelType };
-                        Type wizardType = genericType.MakeGenericType(typeArgs);
+                        Type genericType = typeof(WizardController<,>);
+                        var definition = WizardDefinition.GetDefinition(wizType);
 
-                        object objController = Activator.CreateInstance(wizardType);
-
-                        if(objController != null)
+                        if(definition != null && currentStep > -1)
                         {
-                            return (IController)objController;
+                            var modelType = definition.Steps[currentStep].Type;
+                            if(modelType != null)
+                            {
+                                Type[] typeArgs = { wizType, modelType };
+                                Type wizardType = genericType.MakeGenericType(typeArgs);
+
+                                object objController = Activator.CreateInstance(wizardType);
+
+                                if (objController != null)
+                                {
+                                    return (IController)objController;
+                                }
+                            }
                         }
+
                     }
 
                 }

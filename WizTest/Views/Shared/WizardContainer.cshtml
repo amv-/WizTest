@@ -1,0 +1,27 @@
+﻿@model WizTest.Models.WizardBase
+@{
+    HtmlHelper.UnobtrusiveJavaScriptEnabled = true;
+    HtmlHelper.ClientValidationEnabled = true;
+    string formId = "wiz-form";
+
+    WizardDefinition definition = WizardDefinition.GetDefinition(Model.GetType());
+}
+
+<div id="wiz-container">
+    @using (Ajax.BeginForm("Step", "Wizard", null, new AjaxOptions()
+    {
+        HttpMethod = "POST",
+        UpdateTargetId = "wiz-data",
+        LoadingElementId = "dvloading",
+        InsertionMode = InsertionMode.Replace,
+        OnComplete = string.Format("Wizard.ajaxComplete('{0}')", formId)
+
+    }, new { id = formId, @class = "signup-form" }))
+    {
+        <div id="wiz-data">            
+            @Html.Partial(definition.Steps[Model.Index].View, Model.CurrentStep ?? definition.Steps[Model.Index].Create())
+        </div>
+        @Html.Partial("~/Views/Wizard/WizardNavigation.cshtml", Model)
+    }
+</div>
+

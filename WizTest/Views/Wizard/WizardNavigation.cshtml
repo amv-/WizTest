@@ -1,0 +1,14 @@
+﻿@model WizardBase
+<div class="btn-list wiz-navigation">
+    <div class="btn-list__btn wiz-prev@(Model.Index > 0 ? "" : " hidden")">
+        <button type="submit" value="-1" name="nextMove" class="btn cancel"><img class="btn__icon" src="images/back-arrow.svg" alt=""></button>
+    </div>
+
+    <div class="btn-list__btn wiz-cancel">
+        <button type="submit" value="0" name="nextMove" class="btn cancel">Anuller</button>
+    </div>
+
+    <div class="btn-list__btn wiz-next@(Model.Index < Model.Steps.Length ? "" : " hidden")">
+        <button type="submit" value="1" name="nextMove" class="btn btn--primary">Næste</button>
+    </div>
+</div>

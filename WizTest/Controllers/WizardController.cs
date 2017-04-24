@@ -7,24 +7,53 @@ using WizTest.Models;
 
 namespace WizTest.Controllers
 {
-    public class WizardController<TWizard, TStep> : Controller where TWizard : WizardBase where TStep : WizardStepModel
+
+    public class WizardController<TWizard, TModel> : Controller 
+        where TWizard: WizardBase, new()
+        where TModel: WizardStep, new()
     {
-        // GET: Wizard
-        public ActionResult Index()
+        TWizard wizard = WizardBase.GetWizardData<TWizard>();
+        WizardDefinition definition = WizardDefinition.GetDefinition<TWizard>();
+
+        public TWizard Wizard
         {
-            TWizard wizard = WizardBase.GetWizardData<TWizard>();
-            
-            return Content("index, uuu");
+            get
+            {
+                return wizard;
+            }
         }
 
-        public ActionResult Step(TStep model)
+        public virtual ActionResult Step(TModel model)
         {
-            return Content("Wuuu, " + typeof(TStep).ToString());
+            // Clicked Next
+            if(model.NextMove == 1)
+            {                
+                if (ModelState.IsValid)
+                {
+                    wizard.Steps[wizard.Index] = model;
+                    if(wizard.Steps.Count() > wizard.Index + 1)
+                    {
+                        wizard.Index++;                        
+                    }
+                }
+                else
+                {
+                    model.SetStatus(MessageType.Danger, "Something bad happened");
+                }
+            }
+
+            // Clicked prev
+            if(model.NextMove == -1)
+            {
+                wizard.Index--;
+            }
+
+            return PartialView(definition.Steps[wizard.Index].View, wizard.CurrentStep);
         }
-    }
 
-    public class Wizard
-    {
-
+        public virtual ActionResult Index()
+        {
+            return View();
+        }
     }
 }
