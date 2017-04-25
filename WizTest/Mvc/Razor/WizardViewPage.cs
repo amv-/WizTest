@@ -9,7 +9,7 @@ using WizTest.Models;
 
 namespace WizTest.Mvc.Razor
 {
-    public abstract class WizardViewPage<TModel, TWizard> : WebViewPage<TModel> where TModel: WizardStep where TWizard: WizardBase, new()
+    public abstract class WizardViewPage<TModel, TWizard> : WebViewPage<TModel> where TModel: WizardStep where TWizard: Wizard, new()
     {
         TWizard wizard = null;
         public TWizard Wizard
@@ -23,7 +23,7 @@ namespace WizTest.Mvc.Razor
         public override void InitHelpers()
         {
             base.InitHelpers();
-            wizard = WizardBase.GetWizardData<TWizard>();            
+            wizard = Models.Wizard.GetWizardData<TWizard>();            
         }
 
         public override void ExecutePageHierarchy()

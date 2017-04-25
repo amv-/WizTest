@@ -9,10 +9,10 @@ namespace WizTest.Controllers
 {
 
     public class WizardController<TWizard, TModel> : Controller 
-        where TWizard: WizardBase, new()
+        where TWizard: Wizard, new()
         where TModel: WizardStep, new()
     {
-        TWizard wizard = WizardBase.GetWizardData<TWizard>();
+        TWizard wizard = Models.Wizard.GetWizardData<TWizard>();
         WizardDefinition definition = WizardDefinition.GetDefinition<TWizard>();
 
         public TWizard Wizard
@@ -31,6 +31,12 @@ namespace WizTest.Controllers
                 if (ModelState.IsValid)
                 {
                     wizard.Steps[wizard.Index] = model;
+
+                    // final step
+                    if(wizard.Index == wizard.Steps.Length - 1)
+                    {
+                        return FinalStep(model);
+                    }
                     if(wizard.Steps.Count() > wizard.Index + 1)
                     {
                         wizard.Index++;                        
@@ -48,6 +54,11 @@ namespace WizTest.Controllers
                 wizard.Index--;
             }
 
+            return PartialView(definition.Steps[wizard.Index].View, wizard.CurrentStep);
+        }
+
+        public virtual ActionResult FinalStep(TModel model)
+        {
             return PartialView(definition.Steps[wizard.Index].View, wizard.CurrentStep);
         }
 

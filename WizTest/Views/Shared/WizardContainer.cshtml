@@ -1,4 +1,4 @@
-﻿@model WizTest.Models.WizardBase
+﻿@model WizTest.Models.Wizard
 @{
     HtmlHelper.UnobtrusiveJavaScriptEnabled = true;
     HtmlHelper.ClientValidationEnabled = true;
@@ -19,7 +19,7 @@
     }, new { id = formId, @class = "signup-form" }))
     {
         <div id="wiz-data">            
-            @Html.Partial(definition.Steps[Model.Index].View, Model.CurrentStep ?? definition.Steps[Model.Index].Create())
+            @Html.Partial(definition.Steps[Model.Index].View, Model.CurrentStep ?? definition.Steps[Model.Index].CreateStepModel())
         </div>
         @Html.Partial("~/Views/Wizard/WizardNavigation.cshtml", Model)
     }

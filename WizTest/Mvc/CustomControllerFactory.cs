@@ -13,44 +13,60 @@ namespace WizTest.Mvc
     {
         public override IController CreateController(RequestContext requestContext, string controllerName)
         {
-            if(controllerName.EndsWith("wizard", StringComparison.InvariantCultureIgnoreCase))
+            string wizTypeStr = requestContext.HttpContext.Request["wiztype"];
+            string wizStep = requestContext.HttpContext.Request["wizstep"];
+
+
+            IController controller = null;
+            if (!string.IsNullOrWhiteSpace(wizTypeStr) && !string.IsNullOrWhiteSpace(wizStep))
             {
-                string wizTypeStr = requestContext.HttpContext.Request["wiztype"];
-                string wizStep = requestContext.HttpContext.Request["wizstep"];
-                int currentStep = -1;
-                ;
-                if (!string.IsNullOrWhiteSpace(wizTypeStr) && int.TryParse(wizStep, out currentStep) & currentStep > -1)
+                int stepIndex = -1;
+                if (int.TryParse(wizStep, out stepIndex) && stepIndex >= 0)
                 {
-
-                    Type wizType = Type.GetType(wizTypeStr);
-
-                    if(wizType != null)
+                    Type type = Type.GetType(wizTypeStr);
+                    if (type != null)
                     {
-                        Type genericType = typeof(WizardController<,>);
-                        var definition = WizardDefinition.GetDefinition(wizType);
-
-                        if(definition != null && currentStep > -1)
-                        {
-                            var modelType = definition.Steps[currentStep].Type;
-                            if(modelType != null)
-                            {
-                                Type[] typeArgs = { wizType, modelType };
-                                Type wizardType = genericType.MakeGenericType(typeArgs);
-
-                                object objController = Activator.CreateInstance(wizardType);
-
-                                if (objController != null)
-                                {
-                                    return (IController)objController;
-                                }
-                            }
-                        }
-
+                        controller = GetWizardController(type, stepIndex);
                     }
-
                 }
             }
-            return base.CreateController(requestContext, controllerName);
+
+            return controller ?? base.CreateController(requestContext, controllerName);
+        }
+
+        protected virtual IController GetWizardController(Type wizardType, int stepIndex)
+        {
+            var definition = WizardDefinition.GetDefinition(wizardType);
+            if(definition != null && stepIndex >= 0 && definition.Steps.Count > stepIndex)
+            {
+                return definition.Steps[stepIndex].CreateController();
+            }
+
+            //if (controllerName.Equals("wizard", StringComparison.InvariantCultureIgnoreCase))
+            //{
+            //    Type genericType = typeof(WizardController<,>);
+            //    var definition = WizardDefinition.GetDefinition(wizardType);
+
+            //    if (definition != null && stepIndex > -1 && stepIndex < definition.Steps.Count)
+            //    {
+            //        var modelType = definition.Steps[stepIndex].Type;
+
+            //        if (modelType != null)
+            //        {
+            //            Type[] typeArgs = { wizardType, modelType };
+
+            //            Type controllerType = genericType.MakeGenericType(typeArgs);
+
+            //            object objController = Activator.CreateInstance(wizardType);
+
+            //            if (objController != null)
+            //            {
+            //                return (IController)objController;
+            //            }
+            //        }
+            //    }
+            //}
+            return null;
         }
     }
 }
