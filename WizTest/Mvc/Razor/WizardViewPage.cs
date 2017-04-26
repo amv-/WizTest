@@ -9,31 +9,24 @@ using WizTest.Models;
 
 namespace WizTest.Mvc.Razor
 {
-    public abstract class WizardViewPage<TModel, TWizard> : WebViewPage<TModel> where TModel: WizardStep where TWizard: Wizard, new()
+    public abstract class WizardViewPage<TModel> : WebViewPage<TModel> where TModel: WizardStep
     {
-        TWizard wizard = null;
-        public TWizard Wizard
-        {
-            get
-            {
-                return wizard;
-            }
-        }
+        public Wizard Wizard { get; protected set; }
 
         public override void InitHelpers()
         {
             base.InitHelpers();
-            wizard = Models.Wizard.GetWizardData<TWizard>();            
+            Wizard = HttpContext.Current.Items[WizardDefinition.ContextName] as Wizard;
         }
 
         public override void ExecutePageHierarchy()
         {            
             base.ExecutePageHierarchy();
             string output = Output.ToString();
-            if (!output.Contains("</body>") && wizard != null)
+            if (!output.Contains("</body>") && Wizard != null)
             {
-                AddHidden(Output, "wizstep", wizard.Index.ToString());
-                AddHidden(Output, "wiztype", typeof(TWizard).FullName);
+                AddHidden(Output, "wizstep", Wizard.Index.ToString());
+                AddHidden(Output, "wizname", Wizard.Definition.Name);
             }
         }
 

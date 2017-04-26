@@ -45,21 +45,22 @@ namespace WizTest.Models
 
     #endregion
 
-    public abstract class Wizard
+    public class Wizard
     {
-        WizardDefinition definition;
+        public WizardDefinition Definition { get; private set; }
 
         public int Index { set; get; } = 0;
 
         public WizardStep[] Steps { get; set; }
 
-        public Wizard()
+        public Wizard(WizardDefinition definition)
         {
-            definition = WizardDefinition.GetDefinition(this.GetType());
+
             if (definition == null)
             {
-                throw new InvalidOperationException("Wizard type definition not registered");
+                throw new InvalidOperationException("Wizard type definition not provided");
             }
+            Definition = definition;
             Steps = new WizardStep[definition.Steps.Count];
 
         }
@@ -74,42 +75,43 @@ namespace WizTest.Models
 
         #region Static stuff
         const string WIZ_PREFIX = "Wizard_";
-        public static T GetWizardData<T>() where T : Wizard, new()
+        public static Wizard GetWizardData(string name)
         {
-            var wizard = HttpContext.Current.Session[WIZ_PREFIX + typeof(T).Name] as T;
-            return wizard ?? Reset<T>();
+            var wizard = HttpContext.Current.Session[WIZ_PREFIX + name] as Wizard;
+            return wizard ?? Reset(name);
         }
 
-        public static T Reset<T>() where T : Wizard, new()
+        public static Wizard Reset(string name)
         {
-            T wizard = new T();
-            HttpContext.Current.Session[WIZ_PREFIX + typeof(T).Name] = wizard;
+            var def = WizardDefinition.GetDefinition(name);
+            var wizard = new Wizard(def);
+            HttpContext.Current.Session[WIZ_PREFIX + name] = wizard;
             return wizard;
         }
         #endregion
 
     }
 
-    public class MyWizard : Wizard
-    {
-
-    }
 
     public interface IWizardStepMeta
     {
         string View { get; }
         WizardStep CreateStepModel();
         Type Type { get; }
+        WizardDefinition WizardDefinition { get; }
         IController CreateController();
     }
 
-    internal class WizardStepMeta<TModel, TWizard, TController> : IWizardStepMeta where TModel : WizardStep, new()
-        where TController : WizardController<TWizard, TModel>, new()
-        where TWizard : Wizard, new()
+    public class WizardStepMeta<TModel> : IWizardStepMeta where TModel : WizardStep, new()
     {
-        public WizardStepMeta(string view)
+        public Func<TModel, ActionResult> action;
+
+        public WizardDefinition WizardDefinition { get; protected set; }
+        public WizardStepMeta(string view, WizardDefinition definition, Func<TModel, ActionResult> action = null)
         {
             View = view;
+            this.action = action;
+            WizardDefinition = definition;
         }
 
         public string View { private set; get; }
@@ -120,8 +122,8 @@ namespace WizTest.Models
         }
 
         public IController CreateController()
-        {
-            return new TController();
+        {     
+            return new WizardController<TModel>();
         }
 
         Type _type;
@@ -136,35 +138,39 @@ namespace WizTest.Models
                 return _type;
             }
         }
-
+        
     }
 
     public class WizardDefinition
     {
+        public const string ContextName = "ContextWizard";
+        public string Name { get; private set; }
         public List<IWizardStepMeta> Steps = new List<IWizardStepMeta>();
 
-        public WizardDefinition Add<TModel, TWizard, TController>(string view) where TModel : WizardStep, new() where TController: WizardController<TWizard, TModel>, new() where TWizard: Wizard, new()
+   
+        public WizardDefinition(string name, Func<WizardStep, IController> createController = null)
         {
-            Steps.Add(new WizardStepMeta<TModel, TWizard, TController>(view));
+            Name = name;
+        }
+
+        public WizardDefinition Add<TModel>(string view, Func<TModel, ActionResult> action = null) where TModel : WizardStep, new()
+        {
+            Steps.Add(new WizardStepMeta<TModel>(view, this, action));
             return this;
         }
 
+
         #region static stuff
-        static Dictionary<Type, WizardDefinition> _definitions = new Dictionary<Type, WizardDefinition>();
+        static Dictionary<string, WizardDefinition> _definitions = new Dictionary<string, WizardDefinition>();
 
-        public static WizardDefinition GetDefinition<T>() where T : Wizard, new()
+        public static WizardDefinition GetDefinition(string name)
         {
-            return _definitions[typeof(T)];
+            return _definitions[name];
         }
 
-        public static WizardDefinition GetDefinition(Type type)
+        public static void Register(WizardDefinition def)
         {
-            return _definitions[type];
-        }
-
-        public static void Register<T>(WizardDefinition def)
-        {
-            _definitions.Add(typeof(T), def);
+            _definitions.Add(def.Name, def);
         }
 
         #endregion
@@ -184,4 +190,11 @@ namespace WizTest.Models
     {
         Success = 1, Primary = 2, Warning = 3, Danger = 4
     }
+
+    public interface IDatabase
+    {
+
+    }
+
+    public class SomeDb: IDatabase { }
 }

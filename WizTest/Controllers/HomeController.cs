@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using WizTest.Models;
 
 namespace WizTest.Controllers
 {
     public class HomeController : Controller
     {
+        public IDatabase Database { get; private set; }
+        public HomeController(IDatabase database)
+        {
+            Database = database;
+        }
         public ActionResult Index()
         {
             return View();

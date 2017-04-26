@@ -4,9 +4,8 @@
     HtmlHelper.ClientValidationEnabled = true;
     string formId = "wiz-form";
 
-    WizardDefinition definition = WizardDefinition.GetDefinition(Model.GetType());
+    WizardDefinition definition = Model.Definition;
 }
-
 <div id="wiz-container">
     @using (Ajax.BeginForm("Step", "Wizard", null, new AjaxOptions()
     {
